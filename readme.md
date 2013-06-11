@@ -17,3 +17,6 @@
 Loading and rendering should be very fast. Tests on a recent iMac show 10 HD ProRes 422 videos playing back simultaneously at about 30fps. Unlike the approach taken in ofxiPhone's AVFoundation implementation, the video is never processed by the CPU and the pixel data is never copied from video memory (unless you call *getPixels()*, which is still a work-in-progress...).
 
 As far as I can tell, AV Foundation is the same framework that Quicktime X and Finder use for video playback, so you should get performance similar to what you can achieve by opening up a bunch of video files directly from Finder. This is much faster than the original ofVideoPlayer and has better multi-threaded and multi-video support than the QTKit framework.
+
+## License
+This addon is Copyright (C) 2013 Sosolimited and released under an MIT license. Use it as you wish, but keep the license file with it! See LICENSE.txt for more info.
