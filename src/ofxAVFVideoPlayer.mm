@@ -73,6 +73,8 @@ void ofxAVFVideoPlayer::update() {
         fbo.begin();
         [moviePlayer render];
         fbo.end();
+        
+        bHavePixelsChanged = true;
     }
     else {
         ofLogNotice("Movie player not ready.");
@@ -92,15 +94,21 @@ bool ofxAVFVideoPlayer::isFrameNew() {
 }
 
 unsigned char* ofxAVFVideoPlayer::getPixels() {
+    if(bHavePixelsChanged) {
+        fbo.readToPixels(pixels);
+        bHavePixelsChanged = false; // Don't read pixels until next update() is called
+    }
     
+    return pixels.getPixels();
 }
 
 ofPixelsRef ofxAVFVideoPlayer::getPixelsRef() {
-    
+    getPixels();
+    return pixels;
 }
 
 ofTexture* ofxAVFVideoPlayer::getTexture() {
-    
+    return &fbo.getTextureReference();
 }
 
 float ofxAVFVideoPlayer::getPosition() {
@@ -182,15 +190,15 @@ void ofxAVFVideoPlayer::draw(float x, float y) {
 }
 
 float ofxAVFVideoPlayer::getWidth() {
-    
+    return [moviePlayer getVideoSize].width;
 }
 
 float ofxAVFVideoPlayer::getHeight() {
-    
+    [moviePlayer getVideoSize].height;
 }
 
 bool ofxAVFVideoPlayer::isPaused() {
-    
+    return [moviePlayer player].rate == 0;
 }
 
 bool ofxAVFVideoPlayer::isLoading() {
