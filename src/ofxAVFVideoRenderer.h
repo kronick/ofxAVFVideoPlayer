@@ -19,7 +19,6 @@
     AVPlayer *player;
     AVPlayerItem *playerItem;
     AVPlayerLayer *playerLayer;
-    AVAssetReader *videoReader;
     
     CARenderer *layerRenderer;
     
@@ -27,11 +26,11 @@
     
     BOOL loading;
     BOOL ready;
+    BOOL deallocWhenReady;
 }
     @property (nonatomic, retain) AVPlayer *player;
     @property (nonatomic, retain) AVPlayerItem *playerItem;
     @property (nonatomic, retain) AVPlayerLayer *playerLayer;
-    @property (nonatomic, retain) AVAssetReader *videoReader;
     @property (nonatomic, retain) CARenderer *layerRenderer;
 
 - (void) loadFile:(NSString *)filename;

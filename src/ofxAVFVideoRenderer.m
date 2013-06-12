@@ -9,12 +9,13 @@
 #import "ofxAVFVideoRenderer.h"
 
 @implementation AVFVideoRenderer
-@synthesize player, playerItem, playerLayer, videoReader, layerRenderer;
+@synthesize player, playerItem, playerLayer, layerRenderer;
 
 
 - (void) loadFile:(NSString *)filename {
     loading = YES;
     ready = NO;
+    deallocWhenReady = NO;
     //NSURL *fileURL = [NSURL URLWithString:filename];
     NSURL *fileURL = [NSURL fileURLWithPath:[filename stringByStandardizingPath]];
     
@@ -64,10 +65,31 @@
                 loading = NO;
             }
             else {
+                loading = NO;
+                ready = NO;
                 NSLog(@"There was an error loading the file:\n%@", error);
             }
+            
+            // If dealloc is called immediately after loadFile, we have to defer releasing properties
+            if(deallocWhenReady) [self dealloc];
         });
     }];
+}
+
+- (void) dealloc {
+    if(loading) {
+        deallocWhenReady = YES;
+    }
+    else {
+        [self stop];
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+        if(self.playerItem) [self.playerItem removeObserver:self forKeyPath:@"status"];
+        if(self.layerRenderer) [self.layerRenderer release]; // This call is a little slow for some reason...
+        if(self.player) [self.player release];
+        if(self.playerItem) [self.playerItem release];
+        if(self.playerLayer) [self.playerLayer release];
+        if(!deallocWhenReady) [super dealloc];
+    }
 }
 
 - (BOOL) isLoading { return loading; }

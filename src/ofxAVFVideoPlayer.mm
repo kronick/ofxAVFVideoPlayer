@@ -23,7 +23,9 @@ ofxAVFVideoPlayer::ofxAVFVideoPlayer() {
     
 }
 
-ofxAVFVideoPlayer::~ofxAVFVideoPlayer() { }
+ofxAVFVideoPlayer::~ofxAVFVideoPlayer() {
+    close();
+}
 
 bool ofxAVFVideoPlayer::loadMovie(string path) {
     bInitialized = false;
@@ -49,11 +51,16 @@ bool ofxAVFVideoPlayer::loadMovie(string path) {
 }
 
 void ofxAVFVideoPlayer::closeMovie() {
-
+    close();
 }
 
 void ofxAVFVideoPlayer::close() {
-    
+    pixels.clear();
+    if(moviePlayer){
+        [moviePlayer dealloc];
+        moviePlayer = NULL;
+    }
+    bInitialized = false;
 }
 
 void ofxAVFVideoPlayer::idleMovie() {
@@ -94,6 +101,8 @@ bool ofxAVFVideoPlayer::isFrameNew() {
 }
 
 unsigned char* ofxAVFVideoPlayer::getPixels() {
+    if(!moviePlayer || ![moviePlayer isReady] || !bInitialized) return;
+        
     if(bHavePixelsChanged) {
         fbo.readToPixels(pixels);
         bHavePixelsChanged = false; // Don't read pixels until next update() is called
@@ -108,6 +117,8 @@ ofPixelsRef ofxAVFVideoPlayer::getPixelsRef() {
 }
 
 ofTexture* ofxAVFVideoPlayer::getTexture() {
+    if(!moviePlayer || ![moviePlayer isReady] || !bInitialized) return;
+    
     return &fbo.getTextureReference();
 }
 
@@ -202,11 +213,18 @@ bool ofxAVFVideoPlayer::isPaused() {
 }
 
 bool ofxAVFVideoPlayer::isLoading() {
-    
+    return [moviePlayer isLoading];
 }
 
 bool ofxAVFVideoPlayer::isLoaded() {
     return bInitialized;
+}
+
+bool ofxAVFVideoPlayer::errorLoading() {
+    if(!moviePlayer) return false;
+    
+    // Error if movie player is not loading and is not ready
+    return (![moviePlayer isLoading] && ![moviePlayer isReady]);
 }
 
 bool ofxAVFVideoPlayer::isPlaying() {
