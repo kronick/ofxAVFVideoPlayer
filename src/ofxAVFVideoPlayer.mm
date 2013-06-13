@@ -57,7 +57,7 @@ void ofxAVFVideoPlayer::closeMovie() {
 void ofxAVFVideoPlayer::close() {
     pixels.clear();
     if(moviePlayer){
-        [moviePlayer dealloc];
+        [moviePlayer release];
         moviePlayer = NULL;
     }
     bInitialized = false;
@@ -77,6 +77,7 @@ void ofxAVFVideoPlayer::update() {
         }
         
         // Render movie into FBO so we can get a texture
+
         fbo.begin();
         [moviePlayer render];
         fbo.end();
@@ -101,7 +102,7 @@ bool ofxAVFVideoPlayer::isFrameNew() {
 }
 
 unsigned char* ofxAVFVideoPlayer::getPixels() {
-    if(!moviePlayer || ![moviePlayer isReady] || !bInitialized) return;
+    if(!moviePlayer || ![moviePlayer isReady] || !bInitialized) return NULL;
         
     if(bHavePixelsChanged) {
         fbo.readToPixels(pixels);
@@ -117,17 +118,18 @@ ofPixelsRef ofxAVFVideoPlayer::getPixelsRef() {
 }
 
 ofTexture* ofxAVFVideoPlayer::getTexture() {
-    if(!moviePlayer || ![moviePlayer isReady] || !bInitialized) return;
+    if(!moviePlayer || ![moviePlayer isReady] || !bInitialized) return NULL;
     
     return &fbo.getTextureReference();
 }
 
 float ofxAVFVideoPlayer::getPosition() {
-    
+    // Return a fraction between 0 and 1 representing the position of the playhead
+    return CMTimeGetSeconds([[moviePlayer player] currentTime]) / CMTimeGetSeconds([moviePlayer getVideoDuration]);
 }
 
 float ofxAVFVideoPlayer::getPositionInSeconds() {
-    
+    return CMTimeGetSeconds([[moviePlayer player] currentTime]);
 }
 
 float ofxAVFVideoPlayer::getSpeed() {
@@ -139,7 +141,7 @@ ofLoopType ofxAVFVideoPlayer::getLoopState() {
 }
 
 float ofxAVFVideoPlayer::getDuration() {
-    
+    return CMTimeGetSeconds([moviePlayer getVideoDuration]);
 }
 
 bool ofxAVFVideoPlayer::getIsMovieDone() {
@@ -159,7 +161,7 @@ void ofxAVFVideoPlayer::setPaused(bool bPaused) {
 }
 
 void ofxAVFVideoPlayer::setPosition(float pct) {
-    
+    [[moviePlayer player] seekToTime:CMTimeMakeWithSeconds(getDuration() * pct, [moviePlayer getVideoDuration].timescale)];
 }
 
 void ofxAVFVideoPlayer::setVolume(float volume) {
@@ -205,7 +207,7 @@ float ofxAVFVideoPlayer::getWidth() {
 }
 
 float ofxAVFVideoPlayer::getHeight() {
-    [moviePlayer getVideoSize].height;
+    return [moviePlayer getVideoSize].height;
 }
 
 bool ofxAVFVideoPlayer::isPaused() {

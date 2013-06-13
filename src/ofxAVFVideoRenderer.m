@@ -28,6 +28,7 @@
         static const NSString *ItemStatusContext;
         // Perform the following back on the main thread
         dispatch_async(dispatch_get_main_queue(), ^{
+            NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
             // Check to see if the file loaded
             NSError *error;
             AVKeyValueStatus status = [asset statusOfValueForKey:tracksKey error:&error];
@@ -39,6 +40,7 @@
                 // Extract the video track to get the video size
                 AVAssetTrack *videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
                 videoSize = [videoTrack naturalSize];
+                videoDuration = asset.duration;
                 
                 self.playerItem = [AVPlayerItem playerItemWithAsset:asset];
                 [self.playerItem addObserver:self forKeyPath:@"status" options:0 context:&ItemStatusContext];
@@ -72,6 +74,7 @@
             
             // If dealloc is called immediately after loadFile, we have to defer releasing properties
             if(deallocWhenReady) [self dealloc];
+            [pool release];
         });
     }];
 }
@@ -82,9 +85,17 @@
     }
     else {
         [self stop];
+
+        // SK: Releasing the CARenderer is slow for some reason
+        // I'm choosing to intentionally let it leak its 16 bytes of memory
+        // because otherwise it introduces a ~30ms pause in the main render loop
+        // every time a video is closed.
+
+        if(self.layerRenderer) [self.layerRenderer release];
+    
         [[NSNotificationCenter defaultCenter] removeObserver:self];
         if(self.playerItem) [self.playerItem removeObserver:self forKeyPath:@"status"];
-        if(self.layerRenderer) [self.layerRenderer release]; // This call is a little slow for some reason...
+        
         if(self.player) [self.player release];
         if(self.playerItem) [self.playerItem release];
         if(self.playerLayer) [self.playerLayer release];
@@ -97,6 +108,10 @@
 
 - (CGSize) getVideoSize {
     return videoSize;
+}
+
+- (CMTime) getVideoDuration {
+    return videoDuration;
 }
 
 - (void) play {
@@ -119,6 +134,10 @@
 
 - (void) render {
     // From https://qt.gitorious.org/qt/qtmultimedia/blobs/700b4cdf42335ad02ff308cddbfc37b8d49a1e71/src/plugins/avfoundation/mediaplayer/avfvideoframerenderer.mm
+    
+    glPushAttrib(GL_ENABLE_BIT);
+    glDisable(GL_DEPTH_TEST);
+    
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -145,6 +164,9 @@
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
+    
+    glPopAttrib();
+    
     glFinish(); //Rendering needs to be done before passing texture to video frame
 }
 

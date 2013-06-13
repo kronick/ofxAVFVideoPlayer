@@ -23,6 +23,7 @@
     CARenderer *layerRenderer;
     
     CGSize videoSize;
+    CMTime videoDuration;
     
     BOOL loading;
     BOOL ready;
@@ -43,4 +44,6 @@
 - (void) render;
 
 - (CGSize) getVideoSize;
+- (CMTime) getVideoDuration;
+
 @end
