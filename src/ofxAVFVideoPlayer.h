@@ -46,6 +46,7 @@ public:
     // if decodeMode == OF_QTKIT_DECODE_PIXELS_ONLY,
     // the returned pointer will be NULL.
     ofTexture * getTexture();
+    ofTexture& getTextureReference();
     
     float               getPosition();
     float               getPositionInSeconds();

@@ -123,6 +123,12 @@ ofTexture* ofxAVFVideoPlayer::getTexture() {
     return &fbo.getTextureReference();
 }
 
+ofTexture& ofxAVFVideoPlayer::getTextureReference() {
+    if(!moviePlayer || ![moviePlayer isReady] || !bInitialized) return;
+    
+    return fbo.getTextureReference();
+}
+
 float ofxAVFVideoPlayer::getPosition() {
     // Return a fraction between 0 and 1 representing the position of the playhead
     return CMTimeGetSeconds([[moviePlayer player] currentTime]) / CMTimeGetSeconds([moviePlayer getVideoDuration]);

@@ -41,7 +41,7 @@
                 AVAssetTrack *videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
                 videoSize = [videoTrack naturalSize];
                 videoDuration = asset.duration;
-                
+
                 self.playerItem = [AVPlayerItem playerItemWithAsset:asset];
                 [self.playerItem addObserver:self forKeyPath:@"status" options:0 context:&ItemStatusContext];
                 
@@ -138,7 +138,7 @@
     glPushAttrib(GL_ENABLE_BIT);
     glDisable(GL_DEPTH_TEST);
     
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glViewport(0, 0, videoSize.width, videoSize.height);
