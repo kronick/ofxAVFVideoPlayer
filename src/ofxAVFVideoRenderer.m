@@ -87,10 +87,12 @@
         [self stop];
 
         // SK: Releasing the CARenderer is slow for some reason
-        // I'm choosing to intentionally let it leak its 16 bytes of memory
-        // because otherwise it introduces a ~30ms pause in the main render loop
-        // every time a video is closed.
-
+        //     It will freeze the main thread for a few dozen mS.
+        //     If you're swapping in and out videos a lot, the loadFile:
+        //     method should be re-written to just re-use and re-size
+        //     these layers/objects rather than releasing and reallocating
+        //     them every time a new file is needed.
+        
         if(self.layerRenderer) [self.layerRenderer release];
     
         [[NSNotificationCenter defaultCenter] removeObserver:self];
